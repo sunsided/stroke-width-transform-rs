@@ -11,8 +11,15 @@ in the paper [Detecting Text in Natural Scenes with Stroke Width Transform] (PDF
 To apply SWT to an example image and show the result, run:
 
 ```console
-$ cargo run --example swt -- --show images/ocr.png
+$ cargo run --release --example swt -- --show images/train-station.jpg
 ```
+
+The immediate SWT output is a map in which each pixel value corresponds to the
+length of the stroke the pixel is on.
+
+| Example Input       | Example Output (SWT)     |
+|---------------------|--------------------------|
+| ![](images/ocr.png) | ![](.readme/ocr-swt.jpg) |
 
 ## Original publication
 

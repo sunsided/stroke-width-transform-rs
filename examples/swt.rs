@@ -30,7 +30,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let img = image::open(opts.input)?;
     let src = img.clone();
 
-    let swt = StrokeWidthTransform::default();
+    let swt = if opts.bright_on_dark {
+        StrokeWidthTransform::default_bright_on_dark()
+    } else {
+        StrokeWidthTransform::default()
+    };
     let result = swt.apply(&img.into_rgb8());
 
     if opts.show {
