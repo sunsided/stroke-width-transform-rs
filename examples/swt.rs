@@ -4,7 +4,6 @@ use show_image::{
     create_window,
     event::{VirtualKeyCode, WindowEvent},
 };
-use std::path::Path;
 use stroke_width_transform_rs::StrokeWidthTransform;
 
 /// Testing Stroke Width Transforms.

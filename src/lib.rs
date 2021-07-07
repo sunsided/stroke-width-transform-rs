@@ -3,8 +3,23 @@ use image::{
     DynamicImage, GenericImage, GenericImageView, GrayImage, ImageBuffer, Luma, Pixel, Primitive,
     Rgb, RgbImage,
 };
-use imageproc::edges;
+use imageproc::definitions::Image;
+use imageproc::{edges, gradients};
 use num_traits::{Bounded, Num, NumCast, Pow, ToPrimitive};
+
+#[derive(Debug)]
+struct Directions {
+    x: Image<Luma<f32>>,
+    y: Image<Luma<f32>>,
+}
+
+#[derive(Debug, Copy, Clone, Default)]
+struct Position {
+    x: u32,
+    y: u32,
+}
+
+type Ray = Vec<Position>;
 
 pub struct StrokeWidthTransform {
     one_over_gamma: f32,
@@ -28,11 +43,56 @@ impl Default for StrokeWidthTransform {
 impl StrokeWidthTransform {
     /// Applies the Stroke Width Transformation to the image.
     pub fn apply(&self, img: &RgbImage) -> GrayImage {
-        let (width, height) = img.dimensions();
         let gray = self.gleam(img);
+
+        // Temporarily increase the image size for edge detection to work (better).
         let gray = Self::double_the_size(gray);
-        let edges = edges::canny(&gray, self.canny_low, self.canny_high);
+        let edges = self.get_edges(&gray);
+        let gradients = self.get_gradient_directions(&gray);
+
+        // The grayscale image is not required anymore; we can free some memory.
+        drop(gray);
+
+        let swt = self.transform(edges, gradients);
+
+        swt
+    }
+
+    fn transform(&self, edges: GrayImage, directions: Directions) -> GrayImage {
+        let mut rays: Vec<Ray> = Vec::new();
+
+        let (width, height) = edges.dimensions();
+        let mut swt: GrayImage = ImageBuffer::new(width, height);
+
+        for y in 0..height {
+            for x in 0..width {
+                let edge = unsafe { edges.unsafe_get_pixel(x, y) };
+
+                // TODO: Verify edge value range, should be either 0 or 255.
+                if edge[0] < 128 {
+                    continue;
+                }
+
+                if let Some(ray) =
+                    self.process_pixel(Position { x, y }, &edges, &directions, &mut swt)
+                {
+                    rays.push(ray);
+                }
+            }
+        }
+
         edges
+    }
+
+    /// Obtains the stroke width starting from the specified position.
+    fn process_pixel(
+        &self,
+        pos: Position,
+        edges: &GrayImage,
+        directions: &Directions,
+        swt: &mut GrayImage,
+    ) -> Option<Ray> {
+        todo!()
     }
 
     /// Doubles the size of the image.
@@ -42,6 +102,55 @@ impl StrokeWidthTransform {
     fn double_the_size(img: GrayImage) -> GrayImage {
         let (width, height) = img.dimensions();
         resize(&img, width * 2, height * 2, FilterType::Triangle)
+    }
+
+    /// Opposite of `double_the_size`
+    #[allow(unused)]
+    fn halve_the_size<I>(img: Image<I>) -> Image<I>
+    where
+        I: Pixel + 'static,
+    {
+        let (width, height) = img.dimensions();
+        resize(&img, width / 2, height / 2, FilterType::Gaussian)
+    }
+
+    /// Detects edges.
+    fn get_edges(&self, img: &GrayImage) -> GrayImage {
+        edges::canny(&img, self.canny_low, self.canny_high)
+    }
+
+    /// Detects image gradients.
+    fn get_gradient_directions(&self, img: &GrayImage) -> Directions {
+        let grad_x = gradients::horizontal_scharr(&img);
+        let grad_y = gradients::vertical_scharr(&img);
+
+        let (width, height) = img.dimensions();
+        debug_assert_eq!(width, grad_x.dimensions().0);
+        debug_assert_eq!(height, grad_x.dimensions().1);
+
+        let mut out_x: Image<Luma<f32>> = ImageBuffer::new(width, height);
+        let mut out_y: Image<Luma<f32>> = ImageBuffer::new(width, height);
+
+        for y in 0..height {
+            for x in 0..width {
+                let gx = unsafe { grad_x.unsafe_get_pixel(x, y) };
+                let gy = unsafe { grad_y.unsafe_get_pixel(x, y) };
+
+                let gx = gx[0].to_f32().unwrap();
+                let gy = gy[0].to_f32().unwrap();
+
+                let inv_norm = 1. / (gx * gx + gy * gy).sqrt();
+                let gx = gx * inv_norm;
+                let gy = gy * inv_norm;
+
+                unsafe {
+                    out_x.unsafe_put_pixel(x, y, [gx].into());
+                    out_y.unsafe_put_pixel(x, y, [gy].into());
+                }
+            }
+        }
+
+        Directions { x: out_x, y: out_y }
     }
 
     /// Implements Gleam grayscale conversion from
