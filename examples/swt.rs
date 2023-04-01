@@ -1,4 +1,4 @@
-use clap::{AppSettings, Clap};
+use clap::{ArgMatches, Args, Parser};
 use image::{ImageBuffer, Luma};
 use show_image::{
     create_window,
@@ -7,20 +7,19 @@ use show_image::{
 use stroke_width_transform_rs::StrokeWidthTransform;
 
 /// Testing Stroke Width Transforms.
-#[derive(Clap)]
+#[derive(Parser)]
 #[clap(version = "0.1", author = "Markus Mayer <widemeadows@gmail.com>")]
-#[clap(setting = AppSettings::ColoredHelp)]
 struct Opts {
     /// Enables bright on dark stroke detection.
-    #[clap(short, long)]
+    #[arg(short, long)]
     bright_on_dark: bool,
 
     /// Displays the image.
-    #[clap(short, long)]
+    #[arg(short, long)]
     show: bool,
 
     /// The image file to process.
-    #[clap(validator(file_exists))]
+    #[arg(value_parser = file_exists)]
     input: String,
 }
 
@@ -62,7 +61,7 @@ fn display_image(img: ImageBuffer<Luma<u8>, Vec<u8>>) -> Result<(), Box<dyn std:
     Ok(())
 }
 
-fn file_exists(val: &str) -> Result<(), String> {
+fn file_exists(val: &str) -> Result<String, String> {
     let meta = match std::fs::metadata(val) {
         Ok(meta) => meta,
         Err(_) => return Err(format!("The specified file does not exist: {}", val)),
@@ -72,5 +71,5 @@ fn file_exists(val: &str) -> Result<(), String> {
         return Err(format!("Not a file: {}", val));
     }
 
-    Ok(())
+    Ok(String::from(val))
 }

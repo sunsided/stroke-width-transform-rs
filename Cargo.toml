@@ -13,5 +13,5 @@ num-traits = "0.2.15"
 imageproc = "0.23.0"
 
 [dev-dependencies]
-clap = "4.2.1"
+clap = { version = "4.2.1", features = ["derive"] }
 show-image = { version = "0.13.1", features = [ "image" ] }
