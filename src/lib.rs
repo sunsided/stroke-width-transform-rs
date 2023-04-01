@@ -1,12 +1,9 @@
 use image::{
     imageops::{resize, FilterType},
-    DynamicImage, GenericImage, GenericImageView, GrayImage, ImageBuffer, Luma, Pixel, Primitive,
-    Rgb, RgbImage,
+    GenericImage, GenericImageView, GrayImage, ImageBuffer, Luma, Pixel, RgbImage,
 };
-use imageproc::definitions::Image;
-use imageproc::{edges, gradients};
-use num_traits::real::Real;
-use num_traits::{Bounded, Num, NumCast, Pow, ToPrimitive};
+use imageproc::{definitions::Image, edges, gradients};
+use num_traits::{NumCast, Pow, ToPrimitive};
 
 #[derive(Debug)]
 struct Directions {
@@ -185,8 +182,8 @@ impl StrokeWidthTransform {
             }
 
             // Paint each of the pixels on the ray with their determined stroke width.
-            let delta_x = (cur_pos.x as i64 - pos.x as i64);
-            let delta_y = (cur_pos.y as i64 - pos.y as i64);
+            let delta_x = cur_pos.x as i64 - pos.x as i64;
+            let delta_y = cur_pos.y as i64 - pos.y as i64;
             let stroke_width = ((delta_x * delta_x + delta_y * delta_y) as f32)
                 .sqrt()
                 .floor() as u32;
@@ -351,7 +348,7 @@ mod tests {
 
     #[test]
     fn gamma_works() {
-        let mut swt = StrokeWidthTransform {
+        let swt = StrokeWidthTransform {
             one_over_gamma: 2.,
             ..StrokeWidthTransform::default()
         };

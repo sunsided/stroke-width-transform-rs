@@ -1,17 +1,17 @@
 [package]
 name = "stroke-width-transform-rs"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 
 [[example]]
 name = "swt"
 crate-type = ["bin"]
 
 [dependencies]
-image = "0.23.14"
-num-traits = "0.2.14"
-imageproc = "0.22.0"
+image = "0.24.6"
+num-traits = "0.2.15"
+imageproc = "0.23.0"
 
 [dev-dependencies]
-clap = "3.0.0-beta.2"
-show-image = { version = "0.8.4", features = [ "image" ] }
+clap = "4.2.1"
+show-image = { version = "0.13.1", features = [ "image" ] }
