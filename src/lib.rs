@@ -58,9 +58,7 @@ impl StrokeWidthTransform {
         // The grayscale image is not required anymore; we can free some memory.
         drop(gray);
 
-        let swt = self.transform(edges, directions);
-
-        swt
+        self.transform(edges, directions)
     }
 
     fn transform(&self, edges: GrayImage, directions: Directions) -> GrayImage {
@@ -85,11 +83,10 @@ impl StrokeWidthTransform {
             }
         }
 
-        let swt = convert_u32_to_u8_img(swt);
         // Next-generation println! debugging:
         // swt.save("swt-out.jpg");
 
-        swt
+        convert_u32_to_u8_img(swt)
     }
 
     /// Obtains the stroke width starting from the specified position.
@@ -219,13 +216,13 @@ impl StrokeWidthTransform {
 
     /// Detects edges.
     fn get_edges(&self, img: &GrayImage) -> GrayImage {
-        edges::canny(&img, self.canny_low, self.canny_high)
+        edges::canny(img, self.canny_low, self.canny_high)
     }
 
     /// Detects image gradients.
     fn get_gradient_directions(&self, img: &GrayImage) -> Directions {
-        let grad_x = gradients::horizontal_scharr(&img);
-        let grad_y = gradients::vertical_scharr(&img);
+        let grad_x = gradients::horizontal_scharr(img);
+        let grad_y = gradients::vertical_scharr(img);
 
         let (width, height) = img.dimensions();
         debug_assert_eq!(width, grad_x.dimensions().0);

@@ -2115,7 +2115,6 @@ dependencies = [
  "image",
  "imageproc",
  "num-traits",
- "rayon",
  "show-image",
 ]
 

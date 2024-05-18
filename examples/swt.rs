@@ -1,4 +1,4 @@
-use clap::{ArgMatches, Args, Parser};
+use clap::Parser;
 use image::{ImageBuffer, Luma};
 use show_image::{
     create_window,
@@ -28,7 +28,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opts: Opts = Opts::parse();
 
     let img = image::open(opts.input)?;
-    let src = img.clone();
 
     let swt = if opts.bright_on_dark {
         StrokeWidthTransform::default_bright_on_dark()
