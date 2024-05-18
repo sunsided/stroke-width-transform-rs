@@ -4,8 +4,8 @@ use show_image::{
     create_window,
     event::{VirtualKeyCode, WindowEvent},
 };
-use stroke_width_transform_rs::StrokeWidthTransform;
 use std::time::Instant;
+use stroke_width_transform::StrokeWidthTransform;
 
 /// Testing Stroke Width Transforms.
 #[derive(Parser)]
