@@ -5,6 +5,7 @@ use show_image::{
     event::{VirtualKeyCode, WindowEvent},
 };
 use stroke_width_transform_rs::StrokeWidthTransform;
+use std::time::Instant;
 
 /// Testing Stroke Width Transforms.
 #[derive(Parser)]
@@ -34,7 +35,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         StrokeWidthTransform::default()
     };
+    let start = Instant::now();
     let result = swt.apply(&img.into_rgb8());
+    let duration = start.elapsed();
+
+    println!("Processed image in {duration:?}");
 
     if opts.show {
         show_image::run_context(move || display_image(result));
