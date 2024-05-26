@@ -363,4 +363,14 @@ mod tests {
         assert_eq!(mean(1., 2., 3.), 2.);
         assert_eq!(mean(0., 0., 1.), 1. / 3.);
     }
+
+    #[test]
+    fn parallel_gradients() {
+        let img = image::open("images/ocr.png")
+            .expect("test image is missing")
+            .into_rgb8();
+        let swt = StrokeWidthTransform::default();
+        let _ = swt.apply(&img);
+        // TODO: test for expected output
+    }
 }
