@@ -29,4 +29,5 @@ clap = { version = "4.5.4", features = ["derive"] }
 imageproc = { version = "0.25.0", features = ["display-window"] }
 
 [features]
-rayon = ["dep:rayon"]
+default = ["rayon"]
+rayon = ["dep:rayon", "image/rayon", "imageproc/rayon"]
