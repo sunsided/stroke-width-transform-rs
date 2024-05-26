@@ -1,9 +1,5 @@
 use clap::Parser;
-use image::{ImageBuffer, Luma};
-use show_image::{
-    create_window,
-    event::{VirtualKeyCode, WindowEvent},
-};
+use imageproc::window::display_image;
 use std::time::Instant;
 use stroke_width_transform::StrokeWidthTransform;
 
@@ -41,25 +37,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Processed image in {duration:?}");
 
     if opts.show {
-        show_image::run_context(move || display_image(result));
-    }
-
-    Ok(())
-}
-
-fn display_image(img: ImageBuffer<Luma<u8>, Vec<u8>>) -> Result<(), Box<dyn std::error::Error>> {
-    let window = create_window("image", Default::default())?;
-    window.set_image("Source", img)?;
-
-    for event in window.event_channel()? {
-        if let WindowEvent::KeyboardInput(event) = event {
-            println!("{:#?}", event);
-            if event.input.key_code == Some(VirtualKeyCode::Escape)
-                && event.input.state.is_pressed()
-            {
-                break;
-            }
-        }
+        display_image("", &result, 500, 500);
     }
 
     Ok(())
