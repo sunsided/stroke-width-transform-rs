@@ -221,58 +221,6 @@ impl StrokeWidthTransform {
 
     /// Detects image gradients.
     fn get_gradient_directions(&self, img: &GrayImage) -> Directions {
-        #[cfg(feature = "rayon")]
-        {
-            self.get_gradient_directions_rayon(img)
-        }
-        #[cfg(not(feature = "rayon"))]
-        {
-            self.get_gradient_directions_reference(img)
-        }
-    }
-
-    /// Detects image gradients.
-    #[cfg(any(test, feature = "rayon"))]
-    fn get_gradient_directions_reference(&self, img: &GrayImage) -> Directions {
-        let grad_x = gradients::horizontal_scharr(img);
-        let grad_y = gradients::vertical_scharr(img);
-
-        let (width, height) = img.dimensions();
-        debug_assert_eq!(width, grad_x.dimensions().0);
-        debug_assert_eq!(height, grad_x.dimensions().1);
-
-        let mut out_x: Image<Luma<f32>> = ImageBuffer::new(width, height);
-        let mut out_y: Image<Luma<f32>> = ImageBuffer::new(width, height);
-
-        for y in 0..height {
-            for x in 0..width {
-                let gx = unsafe { grad_x.unsafe_get_pixel(x, y) };
-                let gy = unsafe { grad_y.unsafe_get_pixel(x, y) };
-
-                let gx = gx[0].to_f32().unwrap();
-                let gy = gy[0].to_f32().unwrap();
-
-                let mut inv_norm = 1. / (gx * gx + gy * gy).sqrt();
-                if !inv_norm.is_finite() {
-                    inv_norm = 1.0;
-                }
-
-                let gx = gx * inv_norm;
-                let gy = gy * inv_norm;
-
-                unsafe {
-                    out_x.unsafe_put_pixel(x, y, [gx].into());
-                    out_y.unsafe_put_pixel(x, y, [gy].into());
-                }
-            }
-        }
-
-        Directions { x: out_x, y: out_y }
-    }
-
-    /// Detects image gradients.
-    #[cfg(any(test, feature = "rayon"))]
-    fn get_gradient_directions_rayon(&self, img: &GrayImage) -> Directions {
         let grad_x = gradients::horizontal_scharr(img);
         let grad_y = gradients::vertical_scharr(img);
 
@@ -414,31 +362,5 @@ mod tests {
         assert_eq!(mean(-1., 0., 1.), 0.);
         assert_eq!(mean(1., 2., 3.), 2.);
         assert_eq!(mean(0., 0., 1.), 1. / 3.);
-    }
-
-    #[test]
-    #[cfg(feature = "rayon")]
-    fn parallel_gradients() {
-        let img = image::open("images/ocr.png").expect("test image is missing").into_rgb8();
-
-        let swt = StrokeWidthTransform::default();
-        let gray = swt.gleam(&img);
-
-        let reference = swt.get_gradient_directions_reference(&gray);
-        let parallel = swt.get_gradient_directions_rayon(&gray);
-
-        let (width, height) = gray.dimensions();
-
-        for y in 0..height {
-            for x in 0..width {
-                let left = unsafe { reference.x.unsafe_get_pixel(x, y) };
-                let right = unsafe { parallel.x.unsafe_get_pixel(x, y) };
-                assert_eq!(left, right);
-
-                let left = unsafe { reference.y.unsafe_get_pixel(x, y) };
-                let right = unsafe { parallel.y.unsafe_get_pixel(x, y) };
-                assert_eq!(left, right);
-            }
-        }
     }
 }
