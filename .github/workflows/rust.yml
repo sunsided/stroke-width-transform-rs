@@ -33,7 +33,7 @@ jobs:
           - macos-latest
           - windows-latest
         features:
-          - ''
+          - '--no-default-features'
           - '--all-features'
     steps:
       - uses: actions/checkout@v4
