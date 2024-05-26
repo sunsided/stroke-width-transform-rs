@@ -1,5 +1,9 @@
 # Stroke Width Transform
 
+[![Crates.io](https://img.shields.io/crates/v/stroke-width-transform)](https://crates.io/crates/stroke-width-transform)
+[![Crates.io](https://img.shields.io/crates/l/stroke-width-transform)](https://crates.io/crates/stroke-width-transform)
+[![codecov](https://codecov.io/gh/sunsided/stroke-width-transform-rs/graph/badge.svg?token=2M1H8XLWVG)](https://codecov.io/gh/sunsided/stroke-width-transform-rs)
+
 This is a Rust re-implementation of the [sunsided/stroke-width-transform] repo.
 It provides a test implementation of the Stroke Width Transform algorithm described
 in the paper [Detecting Text in Natural Scenes with Stroke Width Transform] (PDF [here]):
