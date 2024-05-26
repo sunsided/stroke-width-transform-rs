@@ -239,7 +239,11 @@ impl StrokeWidthTransform {
                 let gx = gx[0].to_f32().unwrap();
                 let gy = gy[0].to_f32().unwrap();
 
-                let inv_norm = 1. / (gx * gx + gy * gy).sqrt();
+                let mut inv_norm = 1. / (gx * gx + gy * gy).sqrt();
+                if !inv_norm.is_finite() {
+                    inv_norm = 1.0;
+                }
+
                 let gx = gx * inv_norm;
                 let gy = gy * inv_norm;
 

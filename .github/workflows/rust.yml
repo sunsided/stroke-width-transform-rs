@@ -23,7 +23,18 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check format
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy
+
   build:
+    needs: lint
     name: Build and Test
     runs-on: ${{ matrix.os }}
     strategy:
@@ -37,8 +48,6 @@ jobs:
           - '--all-features'
     steps:
       - uses: actions/checkout@v4
-      - name: Check format
-        run: cargo fmt --check
       - name: Build Library
         run: cargo build --verbose
       - name: Build Examples
