@@ -48,6 +48,8 @@ jobs:
           - '--all-features'
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Build Library
         run: cargo build --verbose
       - name: Build Examples
@@ -63,6 +65,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Build
         run: cargo build --verbose
       - uses: dtolnay/rust-toolchain@stable
