@@ -1,0 +1,73 @@
+---
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'src/**'
+      - 'examples/**'
+      - '.github/workflows/rust.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'src/**'
+      - 'examples/**'
+      - '.github/workflows/rust.yml'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          # - macos-latest
+          # - windows-latest
+        features:
+          - ''
+          - '--all-features'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check format
+        run: cargo fmt --check
+      - name: Build Library
+        run: cargo build --verbose
+      - name: Build Examples
+        run: cargo build --examples
+      - uses: taiki-e/install-action@nextest
+      - name: Run tests
+        run: cargo nextest run --verbose ${{ matrix.features }}
+      - name: Run doctests
+        run: cargo test --doc --verbose ${{ matrix.features }}
+
+  codecov:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: cargo build --verbose
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Install nextest
+        uses: taiki-e/install-action@nextest
+      - name: Generate code coverage
+        run: cargo llvm-cov nextest --all-features --workspace --lcov --output-path lcov.info
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
+          fail_ci_if_error: true
